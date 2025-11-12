@@ -2,6 +2,7 @@ server:
   port: 8087
   servlet:
     context-path: /api/authorization
+
 management:
   server:
     port: 8187
@@ -12,6 +13,7 @@ management:
     web:
       exposure:
         include: '*'
+
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5433/postgres
@@ -28,6 +30,15 @@ spring:
     enabled: true
     drop-first: false
   kafka:
+    topics:
+      auth-login: "auth.login"
+      auth-validate: "auth.validate"
+      auth-response: "auth.response"
+      user-create: "user.create"
+      user-get: "user.get"
+      user-delete: "user.delete"
+      user-update: "user.update"
+      user-response: "user.response"
     consumer:
       group-id: authorization-group
       auto-offset-reset: earliest
@@ -43,6 +54,16 @@ spring:
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
   application:
     name: authorization-app
+
+app:
+  init-users:
+    admin:
+      username: 123
+      password: "admin"
+    user:
+      username: 124
+      password: "user"
+
 jwt:
   secret: "U3VwZXJTZWNyZXRLZXlGb3JKV1RUb2tlbkdlbmVyYXRpb25XaXRoQXRMZWFzdDQ4Q2hhcnM="
   expiration: 86400000

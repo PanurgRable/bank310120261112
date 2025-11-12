@@ -1,5 +1,6 @@
 package com.bank.authorization.service;
 
+import com.bank.authorization.constants.EntityEnum;
 import com.bank.authorization.constants.OperationEnum;
 import com.bank.authorization.dto.AuditDto;
 import com.bank.authorization.entity.Audit;
@@ -8,6 +9,9 @@ import com.bank.authorization.mapper.AuditMapper;
 import com.bank.authorization.repository.AuditRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -19,6 +23,8 @@ public class AuditServiceImpl implements AuditService {
 
     private final AuditRepository auditRepository;
     private final AuditMapper auditMapper;
+
+    private static final String EMPTY_ENTITY_PLACEHOLDER = "null";
 
     @Override
     public void createAudit(AuditDto auditDto) {
@@ -36,7 +42,7 @@ public class AuditServiceImpl implements AuditService {
     }
 
     @Override
-    public AuditDto buildAuditRecord(String entityType,
+    public AuditDto buildAuditRecord(EntityEnum entityType,
                                      OperationEnum operationType,
                                      User oldUser,
                                      User newUser) {
@@ -45,18 +51,27 @@ public class AuditServiceImpl implements AuditService {
 
         AuditDto auditDto = new AuditDto();
         auditDto.setEntityType(entityType);
-        auditDto.setOperationType(String.valueOf(operationType));
-        auditDto.setCreatedBy("SYSTEM");
-        auditDto.setModifiedBy("SYSTEM");
+        auditDto.setOperationType(operationType);
+        auditDto.setCreatedBy(getCurrentUsername());
+        auditDto.setModifiedBy(getCurrentUsername());
         auditDto.setCreatedAt(LocalDateTime.now());
         auditDto.setModifiedAt(LocalDateTime.now());
 
-        auditDto.setEntityJson(oldUser != null ? oldUser.toString() : "null");
-        auditDto.setNewEntityJson(newUser != null ? newUser.toString() : "null");
+        auditDto.setEntityJson(oldUser != null ? oldUser.toString() : EMPTY_ENTITY_PLACEHOLDER);
+        auditDto.setNewEntityJson(newUser != null ? newUser.toString() : EMPTY_ENTITY_PLACEHOLDER);
 
         log.info("Built audit record: {} for {} operation on entity {}",
                 auditDto, operationType, entityType);
 
         return auditDto;
+    }
+
+    private String getCurrentUsername() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() ||
+                authentication instanceof AnonymousAuthenticationToken) {
+            throw new SecurityException("User must be authenticated to perform audit operations");
+        }
+        return authentication.getName();
     }
 }

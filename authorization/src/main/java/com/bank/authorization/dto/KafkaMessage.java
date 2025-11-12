@@ -1,5 +1,6 @@
 package com.bank.authorization.dto;
 
+import com.bank.authorization.constants.MessageEnum;
 import com.bank.authorization.constants.OperationEnum;
 import com.bank.authorization.constants.RoleEnum;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -22,7 +23,7 @@ public class KafkaMessage {
     private Long profileId;
     private String token;
     private Boolean valid;
-    private String message;
+    private MessageEnum message;
     private String password;
     private RoleEnum role;
 }

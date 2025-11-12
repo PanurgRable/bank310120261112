@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 
 import static com.bank.authorization.constants.OperationEnum.CREATE;
 import static com.bank.authorization.constants.OperationEnum.UPDATE;
+import static com.bank.authorization.constants.EntityEnum.USER;
 
 @Aspect
 @Component
@@ -30,7 +31,7 @@ public class UserAuditAspect {
             pointcut = "execution(* com.bank.authorization.service.UserService.createUser(..))",
             returning = "newUser")
     public void auditUserCreation(User newUser) {
-        AuditDto auditDto = auditService.buildAuditRecord("User", CREATE, null, newUser);
+        AuditDto auditDto = auditService.buildAuditRecord(USER, CREATE, null, newUser);
         auditService.createAudit(auditDto);
     }
 
@@ -44,7 +45,7 @@ public class UserAuditAspect {
 
         User updatedUser = (User) result;
 
-        AuditDto auditDto = auditService.buildAuditRecord("User", UPDATE, oldUser, updatedUser);
+        AuditDto auditDto = auditService.buildAuditRecord(USER, UPDATE, oldUser, updatedUser);
         auditService.createAudit(auditDto);
 
         return result;

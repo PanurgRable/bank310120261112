@@ -6,15 +6,19 @@ import com.bank.authorization.entity.User;
 import com.bank.authorization.exeptionhandler.EntityNotFoundException;
 import com.bank.authorization.service.JWTService;
 import com.bank.authorization.service.UserService;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
+import static com.bank.authorization.constants.MessageEnum.LOGIN_FAILED;
+import static com.bank.authorization.constants.MessageEnum.LOGIN_SUCCESS;
+
 @Component
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Slf4j
 public class AuthKafkaConsumer {
 
@@ -22,7 +26,10 @@ public class AuthKafkaConsumer {
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final UserService userService;
 
-    @KafkaListener(topics = "auth.login")
+    @Value("${spring.kafka.topics.auth-response}")
+    private String authResponseTopic;
+
+    @KafkaListener(topics = "${spring.kafka.topics.auth-login}")
     public void consumeAuthLogin(@Payload KafkaMessage message) throws EntityNotFoundException {
         log.info("Received login request for profileId: {}, correlationId: {}",
                 message.getProfileId(), message.getCorrelationId());
@@ -45,12 +52,12 @@ public class AuthKafkaConsumer {
             response.setToken(token);
             response.setProfileId(message.getProfileId());
             response.setValid(true);
-            response.setMessage("LOGIN_SUCCESS");
+            response.setMessage(LOGIN_SUCCESS);
             log.info("Login successful for profileId: {}, correlationId: {}",
                     message.getProfileId(), message.getCorrelationId());
         } else {
             response.setValid(false);
-            response.setMessage("LOGIN_FAILED");
+            response.setMessage(LOGIN_FAILED);
             log.warn("Login failed for profileId: {}, correlationId: {}",
                     message.getProfileId(), message.getCorrelationId());
         }
@@ -58,7 +65,7 @@ public class AuthKafkaConsumer {
         sendAuthResponse(message.getCorrelationId(), response, OperationEnum.LOGIN);
     }
 
-    @KafkaListener(topics = "auth.validate")
+    @KafkaListener(topics = "${spring.kafka.topics.auth-validate}")
     public void consumeAuthValidate(@Payload KafkaMessage message) {
         log.info("Received token validation request, correlationId: {}, token present: {}",
                 message.getCorrelationId(), message.getToken() != null);
@@ -79,7 +86,7 @@ public class AuthKafkaConsumer {
         authData.setOperation(operation);
 
         try {
-            kafkaTemplate.send("auth.response", authData);
+            kafkaTemplate.send(authResponseTopic, authData);
             log.info("Successfully sent auth response for correlationId: {}", correlationId);
         } catch (Exception e) {
             log.error("Failed to send auth response to Kafka, correlationId: {}, error: {}",

@@ -1,5 +1,7 @@
 package com.bank.authorization.dto;
 
+import com.bank.authorization.constants.EntityEnum;
+import com.bank.authorization.constants.OperationEnum;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,8 +15,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class AuditDto {
 
-    private String entityType;
-    private String operationType;
+    private EntityEnum entityType;
+    private OperationEnum operationType;
     private String createdBy;
     private String modifiedBy;
     private LocalDateTime createdAt;

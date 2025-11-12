@@ -16,6 +16,9 @@ import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
 import java.util.Date;
 
+import static com.bank.authorization.constants.MessageEnum.INVALID_TOKEN;
+import static com.bank.authorization.constants.MessageEnum.VALID_TOKEN;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -28,6 +31,8 @@ public class JWTServiceImpl implements JWTService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+
+    private static final String JWT_ROLE_CLAIM = "role";
 
     private SecretKey getSigningKey() {
         log.debug("Generating signing key from secret");
@@ -65,7 +70,7 @@ public class JWTServiceImpl implements JWTService {
             log.error("JWT token is null or empty");
             response.setValid(false);
             response.setProfileId(null);
-            response.setMessage("INVALID_TOKEN");
+            response.setMessage(INVALID_TOKEN);
             return response;
         }
 
@@ -82,14 +87,14 @@ public class JWTServiceImpl implements JWTService {
 
             response.setValid(true);
             response.setProfileId(profileId);
-            response.setMessage("VALID_TOKEN");
+            response.setMessage(VALID_TOKEN);
             log.debug("Successfully extracted profile ID from token: {}", profileId);
 
         } catch (Exception e) {
             log.error("JWT token validation failed: {}", e.getMessage());
             response.setValid(false);
             response.setProfileId(null);
-            response.setMessage("INVALID_TOKEN");
+            response.setMessage(INVALID_TOKEN);
         }
 
         return response;
@@ -103,7 +108,7 @@ public class JWTServiceImpl implements JWTService {
                 .parseClaimsJws(token)
                 .getBody();
 
-        return claims.get("role", String.class);
+        return claims.get(JWT_ROLE_CLAIM, String.class);
     }
 
     @Override
