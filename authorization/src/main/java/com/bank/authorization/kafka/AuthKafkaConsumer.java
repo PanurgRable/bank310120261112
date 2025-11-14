@@ -44,11 +44,11 @@ public class AuthKafkaConsumer {
         log.info("Authentication result for profileId {}: {}",
                 message.getProfileId(), isAuthenticated ? "SUCCESS" : "FAILED");
 
-        String token = jwtService.generateToken(message.getProfileId(), user.getRole());
-        log.info("Generated token for profileId: {}", message.getProfileId());
-
         KafkaMessage response = new KafkaMessage();
         if (isAuthenticated) {
+            String token = jwtService.generateToken(message.getProfileId(), user.getRole());
+            log.info("Generated token for profileId: {}", message.getProfileId());
+
             response.setToken(token);
             response.setProfileId(message.getProfileId());
             response.setValid(true);
