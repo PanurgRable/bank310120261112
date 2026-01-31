@@ -164,4 +164,10 @@
     <changeSet author="Sergey" id="1672956301685-12">
         <addForeignKeyConstraint baseColumnNames="registration_id" baseTableName="passport" constraintName="registration__passport_fk" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="registration"/>
     </changeSet>
+    <changeSet author="codex" id="profile-account-details-profile-index-001">
+        <createIndex indexName="account_details_profile_id_idx" tableName="account_details_id">
+            <column name="profile_id"/>
+        </createIndex>
+    </changeSet>
 </databaseChangeLog>
+

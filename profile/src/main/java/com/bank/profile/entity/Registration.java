@@ -57,6 +57,6 @@ public class Registration {
     @Column(name = "index", nullable = false)
     private Long postalIndex;
 
-    @Column(name = "Column")
+    @Column(name = "column_number")
     private Integer columnNumber;
 }
